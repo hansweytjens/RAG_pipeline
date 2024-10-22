@@ -18,7 +18,7 @@ def _metadata_func(record: Dict, metadata: Dict) -> Dict:
     metadata["date"] = record.get("lastRetrievalTime")
     metadata["title"] = record.get("title")
     metadata["type"] = record.get("type")
-    metadata["language"] = record.get("language")
+    metadata["language"] = record.get("language") if record.get("language") else "en"
     return metadata
 
 def _parse_json_by_language(documents: List[Document], json_data: Dict, language: str = "en"):
@@ -30,7 +30,7 @@ def _parse_json_by_language(documents: List[Document], json_data: Dict, language
         json_data: the json data to convert
     """
     try:
-        if json_data['language'] == language:
+        if json_data.get('language') == language or not json_data.get('language'):
             documents.append(Document(page_content=json_data['content'], metadata=_metadata_func(json_data, {})))
     except KeyError:
         pass

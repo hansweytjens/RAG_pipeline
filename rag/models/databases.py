@@ -11,6 +11,8 @@ from langchain_text_splitters import RecursiveCharacterTextSplitter
 from langchain.retrievers.document_compressors import CrossEncoderReranker
 from langchain_community.cross_encoders import HuggingFaceCrossEncoder
 
+PAGE_SIZE = 1000
+
 class DB(ABC):
     def __init__(self, documents):
         self.documents = documents
@@ -111,7 +113,11 @@ class ChromaDB(VectorDB):
             self.vector_db = chroma
         else:
             if persist_current_vectordb: 
-                self.vector_db = Chroma.from_documents(documents=documents, embedding=embedding_function, persist_directory=persist_directory)
+                self.vector_db = Chroma(embedding_function=embedding_function, persist_directory=persist_directory)
+                for i in range(0, len(documents), PAGE_SIZE):
+                    self.vector_db.add_documents(documents[i:i+PAGE_SIZE])
+                    print(f"[INFO] Processed {i} documents")
+
                 print("[INFO] Persist directory created")
             else: 
                 self.vector_db = Chroma.from_documents(documents=documents, embedding=embedding_function)
